@@ -1,3 +1,19 @@
+# Luttrell, Jason Module 4.2 High/Low Temperatures
+#Using a file for annual highs and lows this program displays a graph of 
+# one of the temperature parameters (highs or lows)
+
+# jml 4/6/25 updated add the following:
+# Open the program with instructions on how to use the menu; Highs, Lows, 
+#     or Exit.
+# When the program starts, allow the user to select whether they want to 
+#     see the high temperatures or the low temperatures, or to exit.
+# When the user selects 'lows', they should see a graph, in blue, that 
+#     reflects the lows for those dates.
+# Allow the program to loop until the user selects exit.
+# When the user exits, provide an exit message.
+# Use what elements you can from previous programs, perhaps including sys 
+#     to help the exit process.
+
 import csv
 from datetime import datetime
 import os
@@ -124,11 +140,6 @@ def setParamVariables(parameter):
         color = 'blue'
         altParam = 'high'
     return([color,altParam])
-
-#Redraws the plot based on the parameter passed     
-def switchGraph(filename, parameter):
-    dates, params = buildlist(filename, parameter)
-    plotGraph(filename, parameter, dates, params)
     
 def exitMsg():
     # close any existing plots
