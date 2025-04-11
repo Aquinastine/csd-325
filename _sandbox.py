@@ -1,105 +1,71 @@
-import csv
-from datetime import datetime
-import os
-from matplotlib import pyplot as plt
-from matplotlib.widgets import Button
-import sys
+def create_keyed_ascii_polybius_grid(key=""):
+    all_chars = [chr(i) for i in range(32, 127)]  # Printable ASCII
+    seen = set()
+    ordered_chars = []
 
-def main():
-    path = os.path.abspath(__file__)
-    path = path[:path.rfind('\\')+1]
-    filename = path + 'sitka_weather_2018_simple.csv'
-    displayMenuItems(filename)
+    for char in key:
+        if char in all_chars and char not in seen:
+            ordered_chars.append(char)
+            seen.add(char)
 
-def displayMenuItems(filename):
-    fig_menu = plt.figure(figsize=(3, 3))
+    for char in all_chars:
+        if char not in seen:
+            ordered_chars.append(char)
 
-    button1_ax = plt.axes([0.1, 0.75, 0.8, 0.15])
-    button1 = Button(button1_ax, 'View Highs')
+    grid = {}
+    reverse_grid = {}
+    index = 0
+    for row in range(10):
+        for col in range(10):
+            if index < len(ordered_chars):
+                code = f"{row}{col}"
+                grid[ordered_chars[index]] = code
+                reverse_grid[code] = ordered_chars[index]
+                index += 1
 
-    button2_ax = plt.axes([0.1, 0.5, 0.8, 0.15])
-    button2 = Button(button2_ax, 'View Lows')
+    return grid, reverse_grid
 
-    button3_ax = plt.axes([0.1, 0.25, 0.8, 0.15])
-    button3 = Button(button3_ax, 'Exit')
+def encrypt_ascii_polybius(text, key=""):
+    grid, _ = create_keyed_ascii_polybius_grid(key)
+    return " ".join(grid.get(char, "??") for char in text)
 
-    button1.on_clicked(lambda event: on_button_click(filename, "high"))
-    button2.on_clicked(lambda event: on_button_click(filename, "low"))
-    button3.on_clicked(lambda event: on_button_click(filename, "exit"))
+def decrypt_ascii_polybius(code, key=""):
+    _, reverse_grid = create_keyed_ascii_polybius_grid(key)
+    return "".join(reverse_grid.get(part, "?") for part in code.split())
 
-    plt.show()
+# 🔽 NEW: Read from file
+def read_text_from_file(filename):
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"File '{filename}' not found.")
+        return ""
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return ""
 
-def on_button_click(filename, parameter):
-    if parameter == 'exit': 
-        plt.close()
-        exitMsg()
-    else:
-        plt.close()
-        dates, params = buildlist(filename, parameter)
-        plotGraph(parameter, dates, params)
+# 🔼 NEW: Write to file
+def write_text_to_file(filename, content):
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"Output written to '{filename}'")
+    except Exception as e:
+        print(f"Error writing to file: {e}")
 
-def buildlist(filename, parameter): 
-    param_row = 5 if parameter == 'high' else 6
-    dates, params = [], []
-
-    with open(filename) as f:
-        reader = csv.reader(f)
-        next(reader)  # skip header
-
-        for row in reader:
-            try:
-                row_date = datetime.strptime(row[2], '%Y-%m-%d')
-                value = int(row[param_row])
-            except ValueError:
-                continue
-            dates.append(row_date)
-            params.append(value)
-
-    return dates, params
-
-def setParamVariables(parameter):
-    if parameter == 'high': 
-        return 'red', 'low'
-    else: 
-        return 'blue', 'high'
-
-def plotGraph(parameter, dates, params):
-    color, altParam = setParamVariables(parameter)
-    fig, ax = plt.subplots()
-    ax.plot(dates, params, c=color)
-    plt.subplots_adjust(bottom=.3)
-
-    button1_ax = plt.axes([0.1, 0.15, 0.35, 0.1])
-    button1 = Button(button1_ax, f'Switch to {altParam.capitalize()}')
-    button1.on_clicked(lambda event: switchGraph(filename, altParam))
-
-    button2_ax = plt.axes([0.55, 0.15, 0.35, 0.1])
-    button2 = Button(button2_ax, 'Exit')
-    button2.on_clicked(lambda event: exitMsg())
-
-    plt.title(f"Daily {parameter.capitalize()} Temperatures - 2018", fontsize=18)
-    plt.xlabel('', fontsize=14)
-    fig.autofmt_xdate()
-    plt.ylabel("Temperature (F)", fontsize=14)
-    plt.tick_params(axis='both', which='major', labelsize=12)
-
-    plt.show()
-
-def switchGraph(filename, parameter):
-    plt.close()
-    dates, params = buildlist(filename, parameter)
-    plotGraph(parameter, dates, params)
-
-def exitMsg():
-    fig = plt.figure(figsize=(2, 1))
-    plt.text(0.25, 0.5, "Goodbye!", fontsize=14)
-    plt.axis('off')
-
-    button_ax = plt.axes([0.3, 0.1, 0.4, 0.3])
-    button = Button(button_ax, 'OK')
-    button.on_clicked(lambda event: sys.exit())
-
-    plt.show()
-
+# 🧪 Example Usage
 if __name__ == "__main__":
-    main()
+    key = "TOPSECRET"
+    input_file = "input.txt"
+    output_file = "encrypted.txt"
+
+    # Encrypt from file
+    plaintext = read_text_from_file(input_file)
+    encrypted = encrypt_ascii_polybius(plaintext, key)
+    write_text_to_file(output_file, encrypted)
+
+    # To decrypt:
+    # encrypted = read_text_from_file("encrypted.txt")
+    # decrypted = decrypt_ascii_polybius(encrypted, key)
+    # write_text_to_file("decrypted.txt", decrypted)
