@@ -20,7 +20,21 @@ class Todo(tk.Tk):
 
         self.tasks_canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        self.title("To-Do App v2")
+        self.title("Luttrell To-Do App v2")
+        
+        # Create a menu bar
+        menu_bar = tk.Menu(self)
+
+        # Create the File menu
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Exit", command=self.quit)
+
+        # Add the File menu to the menu bar
+        menu_bar.add_cascade(label="File", menu=file_menu)
+
+        # Display the menu bar
+        self.config(menu=menu_bar)
+        
         self.geometry("300x400")
 
         self.task_create = tk.Text(self.text_frame, height=3, bg="white", fg="black")
@@ -34,9 +48,11 @@ class Todo(tk.Tk):
         self.task_create.pack(side=tk.BOTTOM, fill=tk.X)
         self.text_frame.pack(side=tk.BOTTOM, fill=tk.X)
         self.task_create.focus_set()
+        
+        msg = "--- Add Items Here --- **Right Click Item to Delete**"
 
-        todo1 = tk.Label(self.tasks_frame, text="--- Add Items Here ---", bg="lightgrey",
-            fg="black", pady=10)
+        todo1 = tk.Label(self.tasks_frame, text=msg,bg="purple",
+            fg="white", pady=10)
         todo1.bind("<Button-1>", self.remove_task)
 
         self.tasks.append(todo1)
@@ -51,8 +67,8 @@ class Todo(tk.Tk):
         self.bind_all("<Button-5>", self.mouse_scroll)
         self.tasks_canvas.bind("<Configure>", self.task_width)
 
-        self.colour_schemes = [{"bg": "lightgrey", "fg": "black"}, 
-                               {"bg": "grey", "fg": "white"}]
+        self.colour_schemes = [ {"bg": "purple", "fg": "white"},
+                               {"bg": "yellow", "fg": "black"}]
 
     def add_task(self, event=None):
         task_text = self.task_create.get(1.0,tk.END).strip()
@@ -61,7 +77,7 @@ class Todo(tk.Tk):
             new_task = tk.Label(self.tasks_frame, text=task_text, pady=10)
             self.set_task_colour(len(self.tasks), new_task)
 
-            new_task.bind("<Button-1>", self.remove_task)
+            new_task.bind("<Button-3>", self.remove_task)
             new_task.pack(side=tk.TOP, fill=tk.X)
 
             self.tasks.append(new_task)
